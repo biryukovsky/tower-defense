@@ -2,7 +2,7 @@ import pygame
 
 from tower_defense.config import (WINDOW_HEIGHT, WINDOW_WIDTH, FPS, ASSETS_DIR,
                                   DEFAULT_MONEY, )
-# from tower_defense.enemy.mage import Mage
+from tower_defense.enemy.mage import Mage
 
 
 class EventHandler:
@@ -42,7 +42,7 @@ class Game:
         self.display_surf: pygame.Surface = None
         self.clock: pygame.time.Clock = None
         self.enemies = [
-            # Mage(75, 63),
+            Mage(75, 63),
         ]
         self.towers = []
         self.health = 10
