@@ -43,7 +43,7 @@ class Enemy:
 
     def collide(self, x, y) -> bool:
         if x <= self.x + self.width and x >= self.x:
-            if y <= self.y + self.health and y >= self.y:
+            if y <= self.y + self.height and y >= self.y:
                 return True
         return False
 

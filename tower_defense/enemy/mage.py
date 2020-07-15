@@ -14,6 +14,7 @@ class Mage(Enemy):
 
     def __init__(self, width, height):
         super().__init__(width, height)
+        self.velocity = 3
 
     def move(self):
         if self.current_path_index + 1 >= len(self.path):
@@ -21,15 +22,15 @@ class Mage(Enemy):
         else:
             point = self.path[self.current_path_index]
 
-        if (self.x, self.y) == point:
+        if (self.x, self.y) >= point:
             self.current_path_index += 1
 
         point_x, point_y = point
         if self.x < point_x:
-            self.x += 1
+            self.x += self.velocity
 
         if self.y < point_y:
-            self.y += 1
+            self.y += self.velocity
 
         if self.current_path_index >= len(self.path):
             self.current_path_index = 0
