@@ -1,6 +1,6 @@
 import pygame
 
-from tower_defense.config import ASSETS_DIR
+from tower_defense.config import ASSETS_DIR, SPRITE_WIDTH, SPRITE_HEIGHT
 from tower_defense.path import BOTTOM_OFF_SCREEN, LEFT_TO_BOTTOM
 
 
@@ -8,7 +8,7 @@ MAGE_DIR = ASSETS_DIR / 'enemies' / 'mage'
 
 
 class MageSprite(pygame.sprite.Sprite):
-    images = [pygame.transform.scale(pygame.image.load(str(p.absolute())), (84, 64))
+    images = [pygame.transform.scale(pygame.image.load(str(p.absolute())), (SPRITE_WIDTH, SPRITE_HEIGHT))
               for p in MAGE_DIR.glob('*.png')]
 
     def __init__(self, *groups, surface: pygame.Surface):
@@ -19,7 +19,7 @@ class MageSprite(pygame.sprite.Sprite):
 
         self.surf = surface
         self.current_path_index = 0
-        self.velocity = 4
+        self.velocity = 3
         self.frame_index = 0
         self.health = 10
 
@@ -29,15 +29,15 @@ class MageSprite(pygame.sprite.Sprite):
         else:
             point = self.path[self.current_path_index]
 
-        if (self.rect.x, self.rect.y) >= point:
+        if (self.rect.centerx, self.rect.centery) >= point:
             self.current_path_index += 1
 
         point_x, point_y = point
-        if self.rect.x < point_x:
-            self.rect.x += self.velocity
+        if self.rect.centerx < point_x:
+            self.rect.centerx += self.velocity
 
-        if self.rect.y < point_y:
-            self.rect.y += self.velocity
+        if self.rect.centery < point_y:
+            self.rect.centery += self.velocity
 
         if self.current_path_index >= len(self.path):
             self.current_path_index = 0
@@ -60,7 +60,7 @@ class MageSprite(pygame.sprite.Sprite):
 
     def should_be_killed(self):
         conditions = [
-            (self.rect.x, self.rect.y) > BOTTOM_OFF_SCREEN,
+            (self.rect.centerx, self.rect.centery) > BOTTOM_OFF_SCREEN,
             self.health == 0,
             self.current_path_index >= len(self.path),
         ]
