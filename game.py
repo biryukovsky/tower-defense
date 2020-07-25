@@ -2,7 +2,7 @@ import pygame
 
 from tower_defense.config import (WINDOW_HEIGHT, WINDOW_WIDTH, FPS, ASSETS_DIR,
                                   DEFAULT_MONEY, )
-# from tower_defense.enemy.mage import Mage
+from tower_defense.enemy.mage import MageSprite
 
 
 class EventHandler:
@@ -33,6 +33,7 @@ class EventHandler:
         if not btn == pygame.BUTTON_LEFT:
             return
         pos = pygame.mouse.get_pos()
+        print(pos)
 
 
 class Game:
@@ -41,9 +42,7 @@ class Game:
         self.running = True
         self.display_surf: pygame.Surface = None
         self.clock: pygame.time.Clock = None
-        self.enemies = [
-            # Mage(75, 63),
-        ]
+        self.enemies = pygame.sprite.Group()
         self.towers = []
         self.health = 10
         self.money = DEFAULT_MONEY
@@ -60,11 +59,19 @@ class Game:
         self.display_surf = pygame.display.set_mode(self.window_size)
         self.bg = pygame.image.load(str(ASSETS_DIR / 'game_bg.png'))
 
+        self.generate_enemies()
+
     def on_event(self, event: pygame.event.Event):
         EventHandler(self, event)()
 
     def cleanup(self):
         pygame.quit()
+
+    def generate_enemies(self):
+        mages = [
+            MageSprite(surface=self.display_surf),
+        ]
+        self.enemies.add(*mages)
 
     def draw(self):
         pygame.time.wait(0)
@@ -72,7 +79,7 @@ class Game:
         self.display_surf.blit(fitted_bg, (0, 0))
 
         for enemy in self.enemies:
-            enemy.draw(self.display_surf)
+            enemy.update()
 
         pygame.display.update()
         self.clock.tick(FPS)
@@ -83,15 +90,6 @@ class Game:
         while self.running:
             for event in pygame.event.get():
                 self.on_event(event)
-
-            enemies_to_delete = []
-            for enemy in self.enemies:
-                if (enemy.x, enemy.y) > self.window_size:
-                    enemies_to_delete.append(enemy)
-
-            for e in enemies_to_delete[:]:
-                self.enemies.remove(e)
-                del e
 
             self.draw()
 
