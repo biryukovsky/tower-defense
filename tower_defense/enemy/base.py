@@ -3,6 +3,7 @@ from typing import List
 import pygame
 
 from tower_defense.path import (LEFT_TO_BOTTOM, BOTTOM_OFF_SCREEN, )
+from tower_defense.config import EVENT_ENEMY_PASSED
 
 
 class BaseEnemySprite(pygame.sprite.Sprite):
@@ -17,6 +18,7 @@ class BaseEnemySprite(pygame.sprite.Sprite):
     Sprites must be collected in pygame.sprite.Group instance
     for proper deleting them from display
     """
+
     images: List[pygame.Surface]
 
     def __init__(self, *groups, surface: pygame.Surface):
@@ -49,6 +51,9 @@ class BaseEnemySprite(pygame.sprite.Sprite):
 
         if self.current_path_index >= len(self.path):
             self.current_path_index = 0
+
+        if (self.rect.centerx, self.rect.centery) > BOTTOM_OFF_SCREEN:
+            pygame.event.post(pygame.event.Event(EVENT_ENEMY_PASSED))
 
     def draw(self):
         if self.frame_index >= len(self.images):
