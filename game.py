@@ -2,7 +2,7 @@ import pygame
 
 from tower_defense.config import (WINDOW_HEIGHT, WINDOW_WIDTH, FPS, ASSETS_DIR,
                                   DEFAULT_MONEY, EVENT_ENEMY_PASSED,
-                                  PLAYER_HEALTH, )
+                                  PLAYER_HEALTH, GAME_OVER, )
 from tower_defense.enemy.mage import MageSprite
 from tower_defense.health_bar import HealthBar
 
@@ -12,6 +12,7 @@ class EventHandler:
         pygame.QUIT: 'quit',
         pygame.MOUSEBUTTONDOWN: 'mouse_click',
         EVENT_ENEMY_PASSED: 'deal_damage',
+        GAME_OVER: 'game_over',
     }
 
     def __init__(self, game_obj: 'Game', event: pygame.event.Event):
@@ -41,6 +42,9 @@ class EventHandler:
     def deal_damage(self):
         self.game.health -= 1
 
+    def game_over(self):
+        self.quit()
+
 
 class Game:
     def __init__(self):
@@ -68,8 +72,6 @@ class Game:
         self.bg = pygame.image.load(str(ASSETS_DIR / 'game_bg.png'))
         # self.font = pygame.font.SysFont(None, 60)
 
-        self.generate_enemies()
-
     def on_event(self, event: pygame.event.Event):
         EventHandler(self, event)()
 
@@ -77,10 +79,8 @@ class Game:
         pygame.quit()
 
     def generate_enemies(self):
-        mages = [
-            MageSprite(surface=self.display_surf),
-        ]
-        self.enemies.add(*mages)
+        mage = MageSprite(surface=self.display_surf)
+        self.enemies.add(mage)
 
     def draw(self):
         pygame.time.wait(0)
@@ -100,10 +100,17 @@ class Game:
 
     def run(self):
         self.init_game()
-
+        ticks = pygame.time.get_ticks() + 3 * 1000
         while self.running:
             for event in pygame.event.get():
                 self.on_event(event)
+
+            if ticks <= pygame.time.get_ticks():
+                ticks = pygame.time.get_ticks() + 3 * 1000
+                self.generate_enemies()
+
+            if self.health == 0:
+                pygame.event.post(pygame.event.Event(GAME_OVER))
 
             self.draw()
 

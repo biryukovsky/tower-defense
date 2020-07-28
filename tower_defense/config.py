@@ -13,6 +13,7 @@ SPRITE_WIDTH = 84
 SPRITE_HEIGHT = 64
 
 EVENT_ENEMY_PASSED = USEREVENT + 1
+GAME_OVER = USEREVENT + 2
 
 ASSETS_DIR = pathlib.Path('.') / 'tower_defense' / 'assets'
 
