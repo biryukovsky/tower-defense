@@ -10,7 +10,8 @@ HEALTH_BAR_DIR = ASSETS_DIR / 'health_bar'
 
 
 class HealthBar(pygame.sprite.Sprite):
-    def __init__(self, *groups, surface: pygame.Surface, value: int):
+    def __init__(self, *groups, surface: pygame.Surface, value: int,
+                 initial_value: int = PLAYER_HEALTH):
         super().__init__(*groups)
         self.width = 350
         self.height = 40
@@ -18,8 +19,7 @@ class HealthBar(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
         self.surf = surface
-        # TODO: parameterize initial_value
-        self.initial_value = PLAYER_HEALTH
+        self.initial_value = initial_value
         self.value = value
 
         if self.value > self.initial_value:
