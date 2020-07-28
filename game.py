@@ -1,17 +1,21 @@
 import pygame
 
 from tower_defense.config import (WINDOW_HEIGHT, WINDOW_WIDTH, FPS, ASSETS_DIR,
-                                  DEFAULT_MONEY, )
+                                  DEFAULT_MONEY, EVENT_ENEMY_PASSED,
+                                  PLAYER_HEALTH, GAME_OVER, )
 from tower_defense.enemy.mage import MageSprite
+from tower_defense.health_bar import HealthBar
 
 
 class EventHandler:
     _EVENT_TYPE_MAPPING = {
         pygame.QUIT: 'quit',
         pygame.MOUSEBUTTONDOWN: 'mouse_click',
+        EVENT_ENEMY_PASSED: 'deal_damage',
+        GAME_OVER: 'game_over',
     }
 
-    def __init__(self, game_obj, event: pygame.event.Event):
+    def __init__(self, game_obj: 'Game', event: pygame.event.Event):
         self.game = game_obj
         self.event = event
 
@@ -35,6 +39,12 @@ class EventHandler:
         pos = pygame.mouse.get_pos()
         print(pos)
 
+    def deal_damage(self):
+        self.game.health -= 1
+
+    def game_over(self):
+        self.quit()
+
 
 class Game:
     def __init__(self):
@@ -44,9 +54,11 @@ class Game:
         self.clock: pygame.time.Clock = None
         self.enemies = pygame.sprite.Group()
         self.towers = []
-        self.health = 10
+        self.health = PLAYER_HEALTH
         self.money = DEFAULT_MONEY
         self.bg: pygame.Surface = None
+        self.font: pygame.font.Font = None
+        self.health_bar: pygame.Surface = None
 
     def init_game(self):
         # ATTENTION! High CPU load
@@ -58,8 +70,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.display_surf = pygame.display.set_mode(self.window_size)
         self.bg = pygame.image.load(str(ASSETS_DIR / 'game_bg.png'))
-
-        self.generate_enemies()
+        # self.font = pygame.font.SysFont(None, 60)
 
     def on_event(self, event: pygame.event.Event):
         EventHandler(self, event)()
@@ -68,15 +79,14 @@ class Game:
         pygame.quit()
 
     def generate_enemies(self):
-        mages = [
-            MageSprite(surface=self.display_surf),
-        ]
-        self.enemies.add(*mages)
+        mage = MageSprite(surface=self.display_surf)
+        self.enemies.add(mage)
 
     def draw(self):
         pygame.time.wait(0)
         fitted_bg = pygame.transform.scale(self.bg, self.window_size)
         self.display_surf.blit(fitted_bg, (0, 0))
+        self.draw_health()
 
         for enemy in self.enemies:
             enemy.update()
@@ -84,12 +94,23 @@ class Game:
         pygame.display.update()
         self.clock.tick(FPS)
 
+    def draw_health(self):
+        bar = HealthBar(surface=self.display_surf, value=self.health)
+        bar.update()
+
     def run(self):
         self.init_game()
-
+        ticks = pygame.time.get_ticks() + 3 * 1000
         while self.running:
             for event in pygame.event.get():
                 self.on_event(event)
+
+            if ticks <= pygame.time.get_ticks():
+                ticks = pygame.time.get_ticks() + 3 * 1000
+                self.generate_enemies()
+
+            if self.health == 0:
+                pygame.event.post(pygame.event.Event(GAME_OVER))
 
             self.draw()
 
