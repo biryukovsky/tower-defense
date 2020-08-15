@@ -10,10 +10,10 @@ import pygame
 from tower_defense.tower.base import TOWER_DIR
 
 
-__all__ = ['TowerFoundation', ]
+__all__ = ['TowerPlace', ]
 
 
-class TowerFoundation(pygame.sprite.Sprite):
+class TowerPlace(pygame.sprite.Sprite):
     def __init__(self, *groups, surface: pygame.SurfaceType, position: tuple):
         super().__init__(*groups)
 
@@ -24,6 +24,7 @@ class TowerFoundation(pygame.sprite.Sprite):
         self.surf = surface
         self.position = position
         self.blit_rect = None
+        self.is_free = True
 
     def load_image(self):
         path = str(TOWER_DIR / 'foundation.png')

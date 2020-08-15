@@ -4,9 +4,10 @@ from tower_defense.config import (WINDOW_HEIGHT, WINDOW_WIDTH, FPS, ASSETS_DIR,
                                   DEFAULT_MONEY, EVENT_ENEMY_PASSED,
                                   PLAYER_HEALTH, GAME_OVER, )
 from tower_defense.enemy.mage import MageSprite
-from tower_defense.tower.foundation import TowerFoundation
+from tower_defense.tower.place import TowerPlace
 from tower_defense.health_bar import HealthBar
 from tower_defense.tower.points import TOWER_PLACE_POINTS
+from tower_defense.tower.red_tower import RedTower
 
 
 class EventHandler:
@@ -39,22 +40,29 @@ class EventHandler:
         if btn != pygame.BUTTON_LEFT:
             return
         pos = pygame.mouse.get_pos()
-        self._place_tower(pos)
+        self._put_tower(pos)
 
     def deal_damage(self):
+        # maybe pass amount of hp in event dict?
         self.game.health -= 1
 
     def game_over(self):
         self.quit()
 
-    def _place_tower(self, pos):
+    def _put_tower(self, pos):
         """
         https://stackoverflow.com/questions/44998943/how-to-check-if-the-mouse-is-clicked-in-a-certain-area-pygame
         """
-        # проверяем клик по месту для башни
-        for pl in self.game.tower_foundations:
-            if pl.blit_rect.collidepoint(pos):
-                print('clicked', pl.blit_rect)
+        # check what tower place was clicked
+        pl: TowerPlace
+        for pl in self.game.tower_places:
+            if pl.blit_rect.collidepoint(pos) and pl.is_free:
+                # experimentally calculated offset
+                t_pos = (pl.position[0] + 30, pl.position[1] - 60)
+                tower = RedTower(surface=self.game.display_surf, position=t_pos)
+                self.game.towers.add(tower)
+                # prevent many towers in one place
+                pl.is_free = False
 
 
 class Game:
@@ -65,7 +73,7 @@ class Game:
         self.clock: pygame.time.Clock = None
         self.enemies = pygame.sprite.Group()
         self.towers = pygame.sprite.Group()
-        self.tower_foundations = pygame.sprite.Group()
+        self.tower_places = pygame.sprite.Group()
         self.health = PLAYER_HEALTH
         self.money = DEFAULT_MONEY
         self.bg: pygame.SurfaceType = None
@@ -98,8 +106,8 @@ class Game:
 
     def generate_foundations(self):
         for pos in TOWER_PLACE_POINTS:
-            tw = TowerFoundation(surface=self.display_surf, position=pos)
-            self.tower_foundations.add(tw)
+            tw = TowerPlace(surface=self.display_surf, position=pos)
+            self.tower_places.add(tw)
 
     def draw(self):
         pygame.time.wait(0)
@@ -107,11 +115,11 @@ class Game:
         self.display_surf.blit(fitted_bg, (0, 0))
         self.draw_health()
 
-        for enemy in self.enemies:
-            enemy.update()
+        self.enemies.update()
 
-        for f in self.tower_foundations:
-            f.update()
+        self.tower_places.update()
+
+        self.towers.update()
 
         pygame.display.update()
         self.clock.tick(FPS)
