@@ -15,6 +15,6 @@ SPRITE_HEIGHT = 64
 EVENT_ENEMY_PASSED = USEREVENT + 1
 GAME_OVER = USEREVENT + 2
 
-ASSETS_DIR = pathlib.Path('.') / 'tower_defense' / 'assets'
+ASSETS_DIR = (pathlib.Path('.') / 'tower_defense' / 'assets').absolute()
 
 PLAYER_HEALTH = 10

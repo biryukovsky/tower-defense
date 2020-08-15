@@ -8,10 +8,10 @@ MAGE_DIR = ASSETS_DIR / 'enemies' / 'mage'
 
 
 class MageSprite(BaseEnemySprite):
-    images = [pygame.transform.scale(pygame.image.load(str(p.absolute())), (SPRITE_WIDTH, SPRITE_HEIGHT))
+    images = [pygame.transform.scale(pygame.image.load(str(p)), (SPRITE_WIDTH, SPRITE_HEIGHT))
               for p in MAGE_DIR.glob('*.png')]
 
-    def __init__(self, *groups, surface: pygame.Surface):
+    def __init__(self, *groups, surface: pygame.SurfaceType):
         super().__init__(*groups, surface=surface)
         self.velocity = 3
         self.health = 10

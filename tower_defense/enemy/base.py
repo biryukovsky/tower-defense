@@ -19,9 +19,9 @@ class BaseEnemySprite(pygame.sprite.Sprite):
     for proper deleting them from display
     """
 
-    images: List[pygame.Surface]
+    images: List[pygame.SurfaceType]
 
-    def __init__(self, *groups, surface: pygame.Surface):
+    def __init__(self, *groups, surface: pygame.SurfaceType):
         super().__init__(*groups)
         self.image = self.images[0]
         self.path = LEFT_TO_BOTTOM
