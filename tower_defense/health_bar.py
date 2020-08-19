@@ -10,7 +10,7 @@ HEALTH_BAR_DIR = ASSETS_DIR / 'health_bar'
 
 
 class HealthBar(pygame.sprite.Sprite):
-    def __init__(self, *groups, surface: pygame.SurfaceType, value: int,
+    def __init__(self, *groups, screen: pygame.SurfaceType, value: int,
                  initial_value: int = PLAYER_HEALTH):
         super().__init__(*groups)
         self.width = 350
@@ -18,7 +18,7 @@ class HealthBar(pygame.sprite.Sprite):
         self.image = self.get_base_img()
         self.rect = self.image.get_rect()
 
-        self.surf = surface
+        self.screen = screen
         self.initial_value = initial_value
         self.value = value
 
@@ -51,4 +51,4 @@ class HealthBar(pygame.sprite.Sprite):
         fill_width = self.get_fill_width()
         self.image.blit(fill, (0, 0), (0, 0, fill_width, self.height))
 
-        self.surf.blit(self.image, self.position)
+        self.screen.blit(self.image, self.position)

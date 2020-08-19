@@ -58,8 +58,9 @@ class EventHandler:
         for pl in self.game.tower_places:
             if pl.blit_rect.collidepoint(pos) and pl.is_free:
                 # experimentally calculated offset
-                t_pos = (pl.position[0] + 30, pl.position[1] - 60)
-                tower = RedTower(surface=self.game.display_surf, position=t_pos)
+                tower_pos = (pl.position[0] + 30, pl.position[1] - 60)
+                tower = RedTower(screen=self.game.display_surf, position=tower_pos,
+                                 place=pl)
                 self.game.towers.add(tower)
                 # prevent many towers in one place
                 pl.is_free = False
@@ -101,12 +102,12 @@ class Game:
         pygame.quit()
 
     def generate_enemies(self):
-        mage = MageSprite(surface=self.display_surf)
+        mage = MageSprite(screen=self.display_surf)
         self.enemies.add(mage)
 
     def generate_foundations(self):
         for pos in TOWER_PLACE_POINTS:
-            tw = TowerPlace(surface=self.display_surf, position=pos)
+            tw = TowerPlace(screen=self.display_surf, position=pos)
             self.tower_places.add(tw)
 
     def draw(self):
@@ -116,16 +117,14 @@ class Game:
         self.draw_health()
 
         self.enemies.update()
-
         self.tower_places.update()
-
         self.towers.update()
 
         pygame.display.update()
         self.clock.tick(FPS)
 
     def draw_health(self):
-        bar = HealthBar(surface=self.display_surf, value=self.health)
+        bar = HealthBar(screen=self.display_surf, value=self.health)
         bar.update()
 
     def run(self):

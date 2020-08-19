@@ -11,7 +11,7 @@ class MageSprite(BaseEnemySprite):
     images = [pygame.transform.scale(pygame.image.load(str(p)), (MAGE_WIDTH, MAGE_HEIGHT))
               for p in MAGE_DIR.glob('*.png')]
 
-    def __init__(self, *groups, surface: pygame.SurfaceType):
-        super().__init__(*groups, surface=surface)
+    def __init__(self, *groups, screen: pygame.SurfaceType):
+        super().__init__(*groups, screen=screen)
         self.velocity = 3
         self.health = 10

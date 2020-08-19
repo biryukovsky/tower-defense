@@ -21,13 +21,13 @@ class BaseEnemySprite(pygame.sprite.Sprite):
 
     images: List[pygame.SurfaceType]
 
-    def __init__(self, *groups, surface: pygame.SurfaceType):
+    def __init__(self, *groups, screen: pygame.SurfaceType):
         super().__init__(*groups)
         self.image = self.images[0]
         self.path = LEFT_TO_BOTTOM
         self.rect = self.image.get_rect(center=self.path[0])
 
-        self.surf = surface
+        self.screen = screen
         self.current_path_index = 0
         self.velocity = 0
         self.frame_index = 0
@@ -64,7 +64,7 @@ class BaseEnemySprite(pygame.sprite.Sprite):
 
         # rect.x and rect.y for centering the image
         # in other places we use rect.centerx and rect.centery
-        self.surf.blit(self.image, (self.rect.x, self.rect.y))
+        self.screen.blit(self.image, (self.rect.x, self.rect.y))
         self.move()
 
         if self.should_be_killed():
