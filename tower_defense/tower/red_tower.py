@@ -13,7 +13,7 @@ class RedTower(BaseTowerSprite):
         self.image = self.load_image()
         self.rect = self.image.get_rect()
         super().__init__(*groups, screen=screen, position=position, place=place)
-        self.radius = 140
+        self.radius = 145
 
     def load_image(self):
         path = str(TOWER_DIR / 'red_tower.png')

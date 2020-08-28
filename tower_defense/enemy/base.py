@@ -3,7 +3,7 @@ from typing import List
 import pygame
 
 from tower_defense.path import (LEFT_TO_BOTTOM, BOTTOM_OFF_SCREEN, )
-from tower_defense.config import EVENT_ENEMY_PASSED
+from tower_defense.config import ENEMY_PASSED, ENEMY_MOVE
 
 
 class BaseEnemySprite(pygame.sprite.Sprite):
@@ -53,7 +53,15 @@ class BaseEnemySprite(pygame.sprite.Sprite):
             self.current_path_index = 0
 
         if (self.rect.centerx, self.rect.centery) > BOTTOM_OFF_SCREEN:
-            pygame.event.post(pygame.event.Event(EVENT_ENEMY_PASSED))
+            pygame.event.post(pygame.event.Event(ENEMY_PASSED))
+
+        self._push_move_event()
+
+    def _push_move_event(self):
+        data = {
+            'enemy_obj': self,
+        }
+        pygame.event.post(pygame.event.Event(ENEMY_MOVE, data))
 
     def draw(self):
         if self.frame_index >= len(self.images):

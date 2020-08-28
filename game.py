@@ -1,8 +1,10 @@
+import math
+
 import pygame
 
 from tower_defense.config import (WINDOW_HEIGHT, WINDOW_WIDTH, FPS, ASSETS_DIR,
-                                  DEFAULT_MONEY, EVENT_ENEMY_PASSED,
-                                  PLAYER_HEALTH, GAME_OVER, )
+                                  DEFAULT_MONEY, ENEMY_PASSED,
+                                  PLAYER_HEALTH, GAME_OVER, ENEMY_MOVE, )
 from tower_defense.enemy.mage import MageSprite
 from tower_defense.tower.place import TowerPlace
 from tower_defense.health_bar import HealthBar
@@ -14,8 +16,9 @@ class EventHandler:
     _EVENT_TYPE_MAPPING = {
         pygame.QUIT: 'quit',
         pygame.MOUSEBUTTONDOWN: 'mouse_click',
-        EVENT_ENEMY_PASSED: 'deal_damage',
+        ENEMY_PASSED: 'deal_damage',
         GAME_OVER: 'game_over',
+        ENEMY_MOVE: 'check_radius_collide'
     }
 
     def __init__(self, game_obj: 'Game', event: pygame.event.EventType):
@@ -42,8 +45,22 @@ class EventHandler:
         pos = pygame.mouse.get_pos()
         self._put_tower(pos)
 
+    def check_radius_collide(self):
+        # circle collision detection
+        # https://www.youtube.com/watch?v=gAkUlyj6irw
+        enemy_obj = self.event.dict['enemy_obj']
+        enemy_center_x, enemy_center_y = enemy_obj.rect.center
+        for tower in self.game.towers:
+            circle_center_x, circle_center_y = tower.radius_rect.center
+            distance = math.hypot(circle_center_x - enemy_center_x,
+                                  circle_center_y - enemy_center_y)
+            if distance <= tower.radius:
+                is_collide = True
+            else:
+                is_collide = False
+            # print(is_collide)
+
     def deal_damage(self):
-        # maybe pass amount of hp in event dict?
         self.game.health -= 1
 
     def game_over(self):
