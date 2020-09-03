@@ -56,9 +56,10 @@ class EventHandler:
                                   circle_center_y - enemy_center_y)
             if distance <= tower.radius:
                 is_collide = True
+                tower.set_target(enemy_obj)
             else:
                 is_collide = False
-            # print(is_collide)
+                tower.release_target()
 
     def deal_damage(self):
         self.game.health -= 1

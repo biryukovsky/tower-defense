@@ -22,6 +22,7 @@ class BaseTowerSprite(pygame.sprite.Sprite):
         self.radius_rect = None
         self.radius = 0
         self.place = place
+        self.target = None
 
     def draw_radius(self):
         color = (100, 100, 100, 20)
@@ -31,6 +32,14 @@ class BaseTowerSprite(pygame.sprite.Sprite):
     def draw(self):
         self.blit_rect = self.screen.blit(self.image, self.position)
         self.draw_radius()
+
+    def set_target(self, enemy):
+        if not self.target and enemy.alive():
+            self.target = enemy
+
+    def release_target(self):
+        if self.target is not None:
+            self.target = None
 
     def update(self, *args):
         self.draw()
