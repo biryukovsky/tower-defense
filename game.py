@@ -18,7 +18,7 @@ class EventHandler:
         pygame.MOUSEBUTTONDOWN: 'mouse_click',
         ENEMY_PASSED: 'deal_damage',
         GAME_OVER: 'game_over',
-        ENEMY_MOVE: 'check_radius_collide'
+        ENEMY_MOVE: 'process_tower_target'
     }
 
     def __init__(self, game_obj: 'Game', event: pygame.event.EventType):
@@ -45,20 +45,12 @@ class EventHandler:
         pos = pygame.mouse.get_pos()
         self._put_tower(pos)
 
-    def check_radius_collide(self):
-        # circle collision detection
-        # https://www.youtube.com/watch?v=gAkUlyj6irw
+    def process_tower_target(self):
         enemy_obj = self.event.dict['enemy_obj']
-        enemy_center_x, enemy_center_y = enemy_obj.rect.center
         for tower in self.game.towers:
-            circle_center_x, circle_center_y = tower.radius_rect.center
-            distance = math.hypot(circle_center_x - enemy_center_x,
-                                  circle_center_y - enemy_center_y)
-            if distance <= tower.radius:
-                is_collide = True
+            if tower.collide_enemy(enemy_obj):
                 tower.set_target(enemy_obj)
             else:
-                is_collide = False
                 tower.release_target()
 
     def deal_damage(self):
@@ -120,6 +112,7 @@ class Game:
         pygame.quit()
 
     def generate_enemies(self):
+        # if len(self.enemies) < 1:
         mage = MageSprite(screen=self.display_surf)
         self.enemies.add(mage)
 

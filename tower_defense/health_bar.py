@@ -43,8 +43,7 @@ class HealthBar(pygame.sprite.Sprite):
         return x, y
 
     def get_fill_width(self):
-        nth = self.width // self.initial_value
-        return nth * self.value
+        return self.width // self.initial_value * self.value
 
     def update(self, *args):
         fill = self.get_fill_img()

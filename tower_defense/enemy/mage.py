@@ -12,6 +12,5 @@ class MageSprite(BaseEnemySprite):
               for p in MAGE_DIR.glob('*.png')]
 
     def __init__(self, *groups, screen: pygame.SurfaceType):
-        super().__init__(*groups, screen=screen)
+        super().__init__(*groups, screen=screen, health=10)
         self.velocity = 3
-        self.health = 10

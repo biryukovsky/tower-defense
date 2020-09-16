@@ -21,17 +21,17 @@ class BaseEnemySprite(pygame.sprite.Sprite):
 
     images: List[pygame.SurfaceType]
 
-    def __init__(self, *groups, screen: pygame.SurfaceType):
+    def __init__(self, *groups, screen: pygame.SurfaceType, health: int):
         super().__init__(*groups)
         self.image = self.images[0]
         self.path = LEFT_TO_BOTTOM
-        self.rect = self.image.get_rect(center=self.path[0])
+        self.rect: pygame.Rect = self.image.get_rect(center=self.path[0])
 
         self.screen = screen
         self.current_path_index = 0
         self.velocity = 0
         self.frame_index = 0
-        self.health = 1
+        self._base_heath = self.health = health
 
     def move(self):
         if self.current_path_index + 1 >= len(self.path):
@@ -63,12 +63,24 @@ class BaseEnemySprite(pygame.sprite.Sprite):
         }
         pygame.event.post(pygame.event.Event(ENEMY_MOVE, data))
 
+    def draw_health_bar(self):
+        width = self.rect.width
+        height = 2
+        bg_color = pygame.Color('red')
+        fg_color = pygame.Color('green')
+
+        health_width = width / self._base_heath * self.health
+        pygame.draw.rect(self.image, bg_color, (0, 0, width, height))
+        pygame.draw.rect(self.image, fg_color, (0, 0, health_width, height))
+
     def draw(self):
         if self.frame_index >= len(self.images):
             self.frame_index = 0
 
         self.image = self.images[self.frame_index]
         self.frame_index += 1
+
+        self.draw_health_bar()
 
         # rect.x and rect.y for centering the image
         # in other places we use rect.centerx and rect.centery
