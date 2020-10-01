@@ -1,21 +1,27 @@
+import math
+
 import pygame
 
 from tower_defense.config import (WINDOW_HEIGHT, WINDOW_WIDTH, FPS, ASSETS_DIR,
-                                  DEFAULT_MONEY, EVENT_ENEMY_PASSED,
-                                  PLAYER_HEALTH, GAME_OVER, )
+                                  DEFAULT_MONEY, ENEMY_PASSED,
+                                  PLAYER_HEALTH, GAME_OVER, ENEMY_MOVE, )
 from tower_defense.enemy.mage import MageSprite
+from tower_defense.tower.place import TowerPlace
 from tower_defense.health_bar import HealthBar
+from tower_defense.tower.points import TOWER_PLACE_POINTS
+from tower_defense.tower.red_tower import RedTower
 
 
 class EventHandler:
     _EVENT_TYPE_MAPPING = {
         pygame.QUIT: 'quit',
         pygame.MOUSEBUTTONDOWN: 'mouse_click',
-        EVENT_ENEMY_PASSED: 'deal_damage',
+        ENEMY_PASSED: 'deal_damage',
         GAME_OVER: 'game_over',
+        ENEMY_MOVE: 'process_tower_target'
     }
 
-    def __init__(self, game_obj: 'Game', event: pygame.event.Event):
+    def __init__(self, game_obj: 'Game', event: pygame.event.EventType):
         self.game = game_obj
         self.event = event
 
@@ -34,10 +40,18 @@ class EventHandler:
 
     def mouse_click(self):
         btn = self.event.button
-        if not btn == pygame.BUTTON_LEFT:
+        if btn != pygame.BUTTON_LEFT:
             return
         pos = pygame.mouse.get_pos()
-        print(pos)
+        self._put_tower(pos)
+
+    def process_tower_target(self):
+        enemy_obj = self.event.dict['enemy_obj']
+        for tower in self.game.towers:
+            if tower.collide_enemy(enemy_obj):
+                tower.set_target(enemy_obj)
+            else:
+                tower.release_target()
 
     def deal_damage(self):
         self.game.health -= 1
@@ -45,20 +59,37 @@ class EventHandler:
     def game_over(self):
         self.quit()
 
+    def _put_tower(self, pos):
+        """
+        https://stackoverflow.com/questions/44998943/how-to-check-if-the-mouse-is-clicked-in-a-certain-area-pygame
+        """
+        # check what tower place was clicked
+        pl: TowerPlace
+        for pl in self.game.tower_places:
+            if pl.blit_rect.collidepoint(pos) and pl.is_free:
+                # experimentally calculated offset
+                tower_pos = (pl.position[0] + 30, pl.position[1] - 60)
+                tower = RedTower(screen=self.game.display_surf, position=tower_pos,
+                                 place=pl)
+                self.game.towers.add(tower)
+                # prevent many towers in one place
+                pl.is_free = False
+
 
 class Game:
     def __init__(self):
         self.window_size = (WINDOW_WIDTH, WINDOW_HEIGHT)
         self.running = True
-        self.display_surf: pygame.Surface = None
+        self.display_surf: pygame.SurfaceType = None
         self.clock: pygame.time.Clock = None
         self.enemies = pygame.sprite.Group()
-        self.towers = []
+        self.towers = pygame.sprite.Group()
+        self.tower_places = pygame.sprite.Group()
         self.health = PLAYER_HEALTH
         self.money = DEFAULT_MONEY
-        self.bg: pygame.Surface = None
+        self.bg: pygame.SurfaceType = None
         self.font: pygame.font.Font = None
-        self.health_bar: pygame.Surface = None
+        self.health_bar: pygame.SurfaceType = None
 
     def init_game(self):
         # ATTENTION! High CPU load
@@ -72,15 +103,23 @@ class Game:
         self.bg = pygame.image.load(str(ASSETS_DIR / 'game_bg.png'))
         # self.font = pygame.font.SysFont(None, 60)
 
-    def on_event(self, event: pygame.event.Event):
+        self.generate_foundations()
+
+    def on_event(self, event: pygame.event.EventType):
         EventHandler(self, event)()
 
     def cleanup(self):
         pygame.quit()
 
     def generate_enemies(self):
-        mage = MageSprite(surface=self.display_surf)
+        # if len(self.enemies) < 1:
+        mage = MageSprite(screen=self.display_surf)
         self.enemies.add(mage)
+
+    def generate_foundations(self):
+        for pos in TOWER_PLACE_POINTS:
+            tw = TowerPlace(screen=self.display_surf, position=pos)
+            self.tower_places.add(tw)
 
     def draw(self):
         pygame.time.wait(0)
@@ -88,14 +127,15 @@ class Game:
         self.display_surf.blit(fitted_bg, (0, 0))
         self.draw_health()
 
-        for enemy in self.enemies:
-            enemy.update()
+        self.enemies.update()
+        self.tower_places.update()
+        self.towers.update()
 
         pygame.display.update()
         self.clock.tick(FPS)
 
     def draw_health(self):
-        bar = HealthBar(surface=self.display_surf, value=self.health)
+        bar = HealthBar(screen=self.display_surf, value=self.health)
         bar.update()
 
     def run(self):

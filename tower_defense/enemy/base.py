@@ -3,7 +3,7 @@ from typing import List
 import pygame
 
 from tower_defense.path import (LEFT_TO_BOTTOM, BOTTOM_OFF_SCREEN, )
-from tower_defense.config import EVENT_ENEMY_PASSED
+from tower_defense.config import ENEMY_PASSED, ENEMY_MOVE
 
 
 class BaseEnemySprite(pygame.sprite.Sprite):
@@ -19,19 +19,19 @@ class BaseEnemySprite(pygame.sprite.Sprite):
     for proper deleting them from display
     """
 
-    images: List[pygame.Surface]
+    images: List[pygame.SurfaceType]
 
-    def __init__(self, *groups, surface: pygame.Surface):
+    def __init__(self, *groups, screen: pygame.SurfaceType, health: int):
         super().__init__(*groups)
         self.image = self.images[0]
         self.path = LEFT_TO_BOTTOM
-        self.rect = self.image.get_rect(center=self.path[0])
+        self.rect: pygame.Rect = self.image.get_rect(center=self.path[0])
 
-        self.surf = surface
+        self.screen = screen
         self.current_path_index = 0
         self.velocity = 0
         self.frame_index = 0
-        self.health = 1
+        self._base_heath = self.health = health
 
     def move(self):
         if self.current_path_index + 1 >= len(self.path):
@@ -53,7 +53,25 @@ class BaseEnemySprite(pygame.sprite.Sprite):
             self.current_path_index = 0
 
         if (self.rect.centerx, self.rect.centery) > BOTTOM_OFF_SCREEN:
-            pygame.event.post(pygame.event.Event(EVENT_ENEMY_PASSED))
+            pygame.event.post(pygame.event.Event(ENEMY_PASSED))
+
+        self._push_move_event()
+
+    def _push_move_event(self):
+        data = {
+            'enemy_obj': self,
+        }
+        pygame.event.post(pygame.event.Event(ENEMY_MOVE, data))
+
+    def draw_health_bar(self):
+        width = self.rect.width
+        height = 4
+        bg_color = pygame.Color('red')
+        fg_color = pygame.Color('green')
+
+        health_width = width / self._base_heath * self.health
+        pygame.draw.rect(self.image, bg_color, (0, 0, width, height))
+        pygame.draw.rect(self.image, fg_color, (0, 0, health_width, height))
 
     def draw(self):
         if self.frame_index >= len(self.images):
@@ -62,9 +80,11 @@ class BaseEnemySprite(pygame.sprite.Sprite):
         self.image = self.images[self.frame_index]
         self.frame_index += 1
 
+        self.draw_health_bar()
+
         # rect.x and rect.y for centering the image
         # in other places we use rect.centerx and rect.centery
-        self.surf.blit(self.image, (self.rect.x, self.rect.y))
+        self.screen.blit(self.image, (self.rect.x, self.rect.y))
         self.move()
 
         if self.should_be_killed():

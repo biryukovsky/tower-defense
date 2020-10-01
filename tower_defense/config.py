@@ -9,12 +9,16 @@ FPS = 45
 
 DEFAULT_MONEY = 100
 
-SPRITE_WIDTH = 84
-SPRITE_HEIGHT = 64
+MAGE_WIDTH = 84
+MAGE_HEIGHT = 64
 
-EVENT_ENEMY_PASSED = USEREVENT + 1
+RED_TOWER_WIDTH = 65
+RED_TOWER_HEIGHT = 110
+
+ENEMY_PASSED = USEREVENT + 1
 GAME_OVER = USEREVENT + 2
+ENEMY_MOVE = USEREVENT + 3
 
-ASSETS_DIR = pathlib.Path('.') / 'tower_defense' / 'assets'
+ASSETS_DIR = (pathlib.Path('.') / 'tower_defense' / 'assets').absolute()
 
 PLAYER_HEALTH = 10
