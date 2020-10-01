@@ -65,7 +65,7 @@ class BaseEnemySprite(pygame.sprite.Sprite):
 
     def draw_health_bar(self):
         width = self.rect.width
-        height = 2
+        height = 4
         bg_color = pygame.Color('red')
         fg_color = pygame.Color('green')
 
