@@ -1,10 +1,9 @@
-import math
-
 import pygame
 
 from tower_defense.config import (WINDOW_HEIGHT, WINDOW_WIDTH, FPS, ASSETS_DIR,
                                   DEFAULT_MONEY, ENEMY_PASSED,
-                                  PLAYER_HEALTH, GAME_OVER, ENEMY_MOVE, )
+                                  PLAYER_HEALTH, GAME_OVER, ENEMY_MOVE,
+                                  ENEMY_KILLED, )
 from tower_defense.enemy.mage import MageSprite
 from tower_defense.tower.place import TowerPlace
 from tower_defense.health_bar import HealthBar
@@ -18,15 +17,13 @@ class EventHandler:
         pygame.MOUSEBUTTONDOWN: 'mouse_click',
         ENEMY_PASSED: 'deal_damage',
         GAME_OVER: 'game_over',
-        ENEMY_MOVE: 'process_tower_target'
+        ENEMY_MOVE: 'process_tower_target',
+        ENEMY_KILLED: 'gain_money',
     }
 
     def __init__(self, game_obj: 'Game', event: pygame.event.EventType):
         self.game = game_obj
         self.event = event
-
-    def __call__(self, *args, **kwargs):
-        return self.handle()
 
     def handle(self):
         try:
@@ -71,9 +68,16 @@ class EventHandler:
                 tower_pos = (pl.position[0] + 30, pl.position[1] - 60)
                 tower = RedTower(screen=self.game.display_surf, position=tower_pos,
                                  place=pl)
+                if self.game.money < tower.cost:
+                    return
                 self.game.towers.add(tower)
+                self.game.money -= tower.cost
                 # prevent many towers in one place
                 pl.is_free = False
+
+    def gain_money(self):
+        money = self.event.dict['money']
+        self.game.money += money
 
 
 class Game:
@@ -101,18 +105,17 @@ class Game:
         self.clock = pygame.time.Clock()
         self.display_surf = pygame.display.set_mode(self.window_size)
         self.bg = pygame.image.load(str(ASSETS_DIR / 'game_bg.png'))
-        # self.font = pygame.font.SysFont(None, 60)
+        self.font = pygame.font.SysFont(None, 60)
 
         self.generate_foundations()
 
     def on_event(self, event: pygame.event.EventType):
-        EventHandler(self, event)()
+        EventHandler(self, event).handle()
 
     def cleanup(self):
         pygame.quit()
 
     def generate_enemies(self):
-        # if len(self.enemies) < 1:
         mage = MageSprite(screen=self.display_surf)
         self.enemies.add(mage)
 
@@ -126,6 +129,7 @@ class Game:
         fitted_bg = pygame.transform.scale(self.bg, self.window_size)
         self.display_surf.blit(fitted_bg, (0, 0))
         self.draw_health()
+        self.draw_money()
 
         self.enemies.update()
         self.tower_places.update()
@@ -137,6 +141,10 @@ class Game:
     def draw_health(self):
         bar = HealthBar(screen=self.display_surf, value=self.health)
         bar.update()
+
+    def draw_money(self):
+        money_surf = self.font.render(f'$ {self.money}', 1, pygame.color.Color('green'))
+        self.display_surf.blit(money_surf, (0, 0))
 
     def run(self):
         self.init_game()
