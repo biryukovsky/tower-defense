@@ -25,6 +25,7 @@ class BaseTowerSprite(pygame.sprite.Sprite):
         self.radius = 0
         self.place = place
         self.target = None
+        self.cost = 0
 
         self._ticks = pygame.time.get_ticks()
 

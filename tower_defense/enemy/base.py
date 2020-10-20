@@ -3,7 +3,7 @@ from typing import List
 import pygame
 
 from tower_defense.path import (LEFT_TO_BOTTOM, BOTTOM_OFF_SCREEN, )
-from tower_defense.config import ENEMY_PASSED, ENEMY_MOVE
+from tower_defense.config import ENEMY_PASSED, ENEMY_MOVE, ENEMY_KILLED
 
 
 class BaseEnemySprite(pygame.sprite.Sprite):
@@ -31,6 +31,7 @@ class BaseEnemySprite(pygame.sprite.Sprite):
         self.current_path_index = 0
         self.velocity = 0
         self.frame_index = 0
+        self.points = 0
         self._base_heath = self.health = health
 
     def move(self):
@@ -63,6 +64,12 @@ class BaseEnemySprite(pygame.sprite.Sprite):
         }
         pygame.event.post(pygame.event.Event(ENEMY_MOVE, data))
 
+    def _push_killed_event(self):
+        data = {
+            'money': self.points
+        }
+        pygame.event.post(pygame.event.Event(ENEMY_KILLED, data))
+
     def draw_health_bar(self):
         width = self.rect.width
         height = 4
@@ -88,6 +95,7 @@ class BaseEnemySprite(pygame.sprite.Sprite):
         self.move()
 
         if self.should_be_killed():
+            self._push_killed_event()
             self.kill()
 
     def update(self, *args):

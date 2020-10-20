@@ -14,3 +14,4 @@ class MageSprite(BaseEnemySprite):
     def __init__(self, *groups, screen: pygame.SurfaceType):
         super().__init__(*groups, screen=screen, health=10)
         self.velocity = 3
+        self.points = 10
